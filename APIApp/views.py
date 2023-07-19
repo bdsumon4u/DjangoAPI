@@ -5,6 +5,7 @@ from .models import Product
 from .serializers import ProductSerializer
 from rest_framework import permissions
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
+from .permissions import IsOwnerOrReadOnly
 
 # Create your views here.
 
@@ -18,9 +19,12 @@ class ProductListCreate(ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class ProductRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     authentication_classes = [TokenAuthentication, SessionAuthentication]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
